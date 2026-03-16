@@ -519,3 +519,335 @@ groundSteps.forEach((s, i) => s.addEventListener('click', () => setGroundStep(i)
   show();
   setInterval(show, 10000);
 })();
+
+// ══════════════════════════════════════════════════════
+// MEDITATION MUSIC ENGINE (Web Audio API procedural)
+// ══════════════════════════════════════════════════════
+const MUSIC_TRACKS = [
+  { name: 'Still River — 432Hz Drone',    root: 432,  style: 'drone'   },
+  { name: 'Ancestors\' Rest — 528Hz',     root: 528,  style: 'drone'   },
+  { name: 'Deep Ground — Earth Tone',     root: 174,  style: 'deep'    },
+  { name: 'Morning Light — Soft Bells',   root: 528,  style: 'bells'   },
+  { name: 'Safe Space — Ambient Pad',     root: 396,  style: 'pad'     },
+];
+
+let musicCtx        = null;
+let musicNodes      = [];
+let musicPlaying    = false;
+let musicTrackIdx   = 0;
+let musicVolume     = 0.4;
+let musicMasterGain = null;
+
+function getMusicCtx() {
+  if (!musicCtx) {
+    musicCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicMasterGain = musicCtx.createGain();
+    musicMasterGain.gain.value = musicVolume;
+    musicMasterGain.connect(musicCtx.destination);
+  }
+  return musicCtx;
+}
+
+function stopMusic() {
+  for (const n of musicNodes) {
+    try { n.stop(); } catch (_) {}
+  }
+  musicNodes = [];
+}
+
+function playTrack(track) {
+  stopMusic();
+  const c   = getMusicCtx();
+  const out = musicMasterGain;
+
+  function makeOsc(freq, type, gain, detune = 0) {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type  = type;
+    o.frequency.value = freq;
+    o.detune.value    = detune;
+    g.gain.value      = gain;
+    o.connect(g);
+    g.connect(out);
+    o.start();
+    musicNodes.push(o);
+    return { osc: o, gain: g };
+  }
+
+  function makeNoise(gainVal, lpFreq) {
+    const len  = c.sampleRate * 4;
+    const buf  = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * 0.04;
+    const src  = c.createBufferSource();
+    src.buffer = buf;
+    src.loop   = true;
+    const flt  = c.createBiquadFilter();
+    flt.type   = 'lowpass';
+    flt.frequency.value = lpFreq;
+    const g    = c.createGain();
+    g.gain.value = gainVal;
+    src.connect(flt); flt.connect(g); g.connect(out);
+    src.start();
+    musicNodes.push(src);
+  }
+
+  const root = track.root;
+
+  if (track.style === 'drone') {
+    // Rich harmonic drone: root + octave + fifth + slight detuning for warmth
+    makeOsc(root,        'sine',     0.28);
+    makeOsc(root,        'sine',     0.12,  4);   // slight detune for chorus
+    makeOsc(root * 2,    'sine',     0.14);
+    makeOsc(root * 1.5,  'sine',     0.10);        // perfect fifth
+    makeOsc(root * 3,    'sine',     0.05);
+    makeNoise(0.015, 400);
+  } else if (track.style === 'deep') {
+    // Sub bass rumble — very calming
+    makeOsc(root,        'sine',     0.35);
+    makeOsc(root * 2,    'sine',     0.14);
+    makeOsc(root * 1.33, 'sine',     0.08);
+    makeNoise(0.012, 300);
+  } else if (track.style === 'bells') {
+    // Soft bell-like tones with reverb simulation via feedback
+    makeOsc(root,        'sine',     0.18);
+    makeOsc(root * 2,    'sine',     0.10);
+    makeOsc(root * 4,    'sine',     0.06);
+    makeOsc(root * 6,    'sine',     0.03);
+    makeNoise(0.01, 600);
+    // Slow gentle modulation
+    const lfo = c.createOscillator();
+    const lfoG = c.createGain();
+    lfo.frequency.value = 0.08;
+    lfoG.gain.value = 4;
+    lfo.connect(lfoG);
+    lfo.start();
+    musicNodes.push(lfo);
+  } else if (track.style === 'pad') {
+    // Lush ambient pad
+    makeOsc(root,        'sine',     0.22);
+    makeOsc(root,        'triangle', 0.10,  7);
+    makeOsc(root * 1.5,  'sine',     0.09);
+    makeOsc(root * 2,    'sine',     0.07);
+    makeOsc(root * 0.5,  'sine',     0.14);
+    makeNoise(0.018, 500);
+  }
+}
+
+function updateMusicUI() {
+  const track = MUSIC_TRACKS[musicTrackIdx];
+  document.getElementById('musicTitle').textContent = track.name;
+  const btn = document.getElementById('musicPlay');
+  if (musicPlaying) {
+    btn.innerHTML = '&#9646;&#9646;'; // pause
+    btn.classList.add('playing');
+  } else {
+    btn.innerHTML = '&#9654;';
+    btn.classList.remove('playing');
+  }
+}
+
+document.getElementById('musicPlay').addEventListener('click', () => {
+  if (musicPlaying) {
+    stopMusic();
+    musicPlaying = false;
+  } else {
+    playTrack(MUSIC_TRACKS[musicTrackIdx]);
+    musicPlaying = true;
+  }
+  updateMusicUI();
+});
+
+document.getElementById('musicNext').addEventListener('click', () => {
+  musicTrackIdx = (musicTrackIdx + 1) % MUSIC_TRACKS.length;
+  if (musicPlaying) playTrack(MUSIC_TRACKS[musicTrackIdx]);
+  updateMusicUI();
+});
+
+document.getElementById('musicPrev').addEventListener('click', () => {
+  musicTrackIdx = (musicTrackIdx - 1 + MUSIC_TRACKS.length) % MUSIC_TRACKS.length;
+  if (musicPlaying) playTrack(MUSIC_TRACKS[musicTrackIdx]);
+  updateMusicUI();
+});
+
+document.getElementById('musicVol').addEventListener('input', e => {
+  musicVolume = parseFloat(e.target.value);
+  if (musicMasterGain) musicMasterGain.gain.setTargetAtTime(musicVolume, getMusicCtx().currentTime, 0.05);
+});
+
+updateMusicUI();
+
+// ══════════════════════════════════════════════════════
+// AI COUNSELOR — Dr. Waters
+// Powered by OpenAI GPT-4o
+// ══════════════════════════════════════════════════════
+
+// API key stored in localStorage — never in source code
+function getOpenAIKey() { return localStorage.getItem('sw_openai_key') || ''; }
+function setOpenAIKey(k) { localStorage.setItem('sw_openai_key', k); }
+
+// Show/hide key setup UI
+function refreshKeyUI() {
+  const wrap = document.getElementById('apiKeyWrap');
+  if (!wrap) return;
+  wrap.classList.toggle('hidden', !!getOpenAIKey());
+}
+refreshKeyUI();
+
+document.getElementById('apiKeySave').addEventListener('click', () => {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val.startsWith('sk-')) {
+    setOpenAIKey(val);
+    document.getElementById('apiKeyInput').value = '';
+    refreshKeyUI();
+  } else {
+    document.getElementById('apiKeyInput').style.borderColor = 'rgba(255,80,80,0.5)';
+    setTimeout(() => { document.getElementById('apiKeyInput').style.borderColor = ''; }, 1500);
+  }
+});
+
+const SYSTEM_PROMPT = `You are Dr. Waters, a clinical psychologist with a PhD in Psychology, specializing in:
+- Racial trauma and race-based stress (including everyday racism, vicarious trauma, and acute racial incidents)
+- Intergenerational trauma in Black families and communities
+- Black male psychology, identity, and mental health
+- Culturally responsive therapy, specifically for Black men
+- Somatic approaches to trauma healing
+- The intersection of masculinity, Blackness, and emotional expression
+
+Your approach:
+- Warm, grounded, and deeply empathetic — you speak like someone who truly gets it
+- You do not pathologize Blackness or Black responses to racism — you contextualize them
+- You acknowledge systemic realities without being preachy or political in tone
+- You meet men where they are — if they're guarded, you don't push; if they're open, you go deeper
+- You use both clinical knowledge and cultural understanding
+- You ask thoughtful, open questions that invite reflection
+- You validate before advising
+- You understand the unique pressures on Black men: the strong Black man trope, hypermasculinity pressures, code-switching exhaustion, the racial empathy gap in healthcare, and more
+- You are familiar with key scholars and frameworks: Joy DeGruy's Post Traumatic Slave Syndrome, Resmaa Menakem's somatic work in "My Grandmother's Hands," Chester Pierce's concept of racial microaggressions, and contemporary Black mental health research
+
+Language:
+- Conversational and accessible — not clinical jargon unless explaining a concept
+- Warm but boundaried — you're a therapist, not a friend
+- Never preachy, never performative
+- Keep responses focused and meaningful — 2-4 paragraphs max unless more depth is clearly needed
+
+If someone is in crisis, always gently direct them to call or text 988.`;
+
+const chatHistory = []; // tracks conversation for context
+
+const chatWindow  = document.getElementById('chatWindow');
+const chatInput   = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+
+function appendMessage(role, text) {
+  const wrap   = document.createElement('div');
+  wrap.className = `chat-message ${role}`;
+
+  const sender = document.createElement('div');
+  sender.className = 'chat-sender';
+  sender.textContent = role === 'assistant' ? 'Dr. Waters' : 'You';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  // Render line breaks
+  bubble.innerHTML = text.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+
+  wrap.appendChild(sender);
+  wrap.appendChild(bubble);
+  chatWindow.appendChild(wrap);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return wrap;
+}
+
+function showTyping() {
+  const wrap   = document.createElement('div');
+  wrap.className = 'chat-message assistant chat-typing';
+  const sender = document.createElement('div');
+  sender.className = 'chat-sender';
+  sender.textContent = 'Dr. Waters';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  wrap.appendChild(sender);
+  wrap.appendChild(bubble);
+  chatWindow.appendChild(wrap);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return wrap;
+}
+
+async function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  chatSendBtn.disabled   = true;
+
+  appendMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const typingEl = showTyping();
+
+  try {
+    const key = getOpenAIKey();
+    if (!key) {
+      typingEl.remove();
+      appendMessage('assistant', 'Please enter your OpenAI API key above to start talking with Dr. Waters.');
+      chatSendBtn.disabled = false;
+      refreshKeyUI();
+      return;
+    }
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...chatHistory,
+        ],
+        max_tokens: 600,
+        temperature: 0.8,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error?.message || 'API error');
+    }
+
+    const reply = data.choices[0].message.content.trim();
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    typingEl.remove();
+    appendMessage('assistant', reply);
+
+  } catch (err) {
+    typingEl.remove();
+    appendMessage('assistant', `I'm having trouble connecting right now. If you're in a difficult moment, please reach out to the 988 Suicide & Crisis Lifeline by calling or texting 988. You deserve support.`);
+    console.error('Dr. Waters API error:', err);
+  }
+
+  chatSendBtn.disabled = false;
+  chatInput.focus();
+}
+
+chatSendBtn.addEventListener('click', sendMessage);
+
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// Auto-resize textarea
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
