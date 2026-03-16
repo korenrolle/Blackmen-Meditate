@@ -10,7 +10,6 @@
 </head>
 <body>
 
-  <!-- Ambient background particles -->
   <canvas id="ambientCanvas"></canvas>
 
   <!-- Header -->
@@ -22,6 +21,7 @@
         <span class="logo-sub">A space made for you</span>
       </div>
     </div>
+
     <nav>
       <button class="nav-btn active" data-view="breathe">Breathe</button>
       <button class="nav-btn" data-view="timer">Sit</button>
@@ -29,12 +29,22 @@
       <button class="nav-btn" data-view="resources">Ground</button>
       <button class="nav-btn nav-btn-counsel" data-view="counsel">Counsel</button>
     </nav>
+
+    <!-- Compact music player in header -->
+    <div class="music-widget" id="musicWidget">
+      <button class="music-widget-btn" id="musicPrev" title="Previous">&#8249;</button>
+      <button class="music-widget-play" id="musicPlay" title="Play">&#9654;</button>
+      <button class="music-widget-btn" id="musicNext" title="Next">&#8250;</button>
+      <div class="music-widget-info">
+        <div class="music-widget-title" id="musicTitle">Still River</div>
+        <input type="range" class="music-widget-vol" id="musicVol" min="0" max="1" step="0.01" value="0.4" title="Volume" />
+      </div>
+    </div>
   </header>
 
-  <!-- Main -->
   <main>
 
-    <!-- ── VIEW: BREATHE ── -->
+    <!-- ── BREATHE ── -->
     <section class="view active" id="view-breathe">
       <div class="section-label">Breathe</div>
       <h1>You are safe right now.</h1>
@@ -52,7 +62,7 @@
       </div>
 
       <div class="breath-ring-wrap">
-        <svg class="breath-ring" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <svg class="breath-ring" viewBox="0 0 200 200">
           <circle class="ring-bg" cx="100" cy="100" r="88" />
           <circle class="ring-track" cx="100" cy="100" r="88" />
           <circle class="ring-progress" id="breathRingProgress" cx="100" cy="100" r="88" />
@@ -70,7 +80,7 @@
       <div class="session-stat" id="breathStat"></div>
     </section>
 
-    <!-- ── VIEW: TIMER ── -->
+    <!-- ── SIT ── -->
     <section class="view" id="view-timer">
       <div class="section-label">Meditation Timer</div>
       <h1>Be still. Be present.</h1>
@@ -85,7 +95,7 @@
       </div>
 
       <div class="timer-display-wrap">
-        <svg class="timer-ring" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <svg class="timer-ring" viewBox="0 0 220 220">
           <circle class="ring-bg" cx="110" cy="110" r="96" />
           <circle class="ring-track" cx="110" cy="110" r="96" />
           <circle class="ring-progress" id="timerRingProgress" cx="110" cy="110" r="96" />
@@ -112,7 +122,7 @@
       </div>
     </section>
 
-    <!-- ── VIEW: AFFIRMATIONS ── -->
+    <!-- ── AFFIRM ── -->
     <section class="view" id="view-affirmations">
       <div class="section-label">Daily Affirmations</div>
       <h1>Words for the journey.</h1>
@@ -136,13 +146,12 @@
       </div>
     </section>
 
-    <!-- ── VIEW: GROUND (Resources) ── -->
+    <!-- ── GROUND ── -->
     <section class="view" id="view-resources">
       <div class="section-label">Grounding & Resources</div>
       <h1>You don't have to hold this alone.</h1>
       <p class="subtitle">Tools for when things feel heavy, and people who understand.</p>
 
-      <!-- 5-4-3-2-1 Grounding -->
       <div class="ground-card">
         <div class="ground-card-title">5-4-3-2-1 Grounding</div>
         <div class="ground-card-desc">
@@ -150,56 +159,20 @@
           Work through each sense slowly.
         </div>
         <div class="ground-steps" id="groundSteps">
-          <div class="ground-step active" data-idx="0">
-            <span class="ground-num">5</span>
-            <span class="ground-sense">Things you can <strong>see</strong></span>
-          </div>
-          <div class="ground-step" data-idx="1">
-            <span class="ground-num">4</span>
-            <span class="ground-sense">Things you can <strong>touch</strong></span>
-          </div>
-          <div class="ground-step" data-idx="2">
-            <span class="ground-num">3</span>
-            <span class="ground-sense">Things you can <strong>hear</strong></span>
-          </div>
-          <div class="ground-step" data-idx="3">
-            <span class="ground-num">2</span>
-            <span class="ground-sense">Things you can <strong>smell</strong></span>
-          </div>
-          <div class="ground-step" data-idx="4">
-            <span class="ground-num">1</span>
-            <span class="ground-sense">Thing you can <strong>taste</strong></span>
-          </div>
+          <div class="ground-step active" data-idx="0"><span class="ground-num">5</span><span class="ground-sense">Things you can <strong>see</strong></span></div>
+          <div class="ground-step" data-idx="1"><span class="ground-num">4</span><span class="ground-sense">Things you can <strong>touch</strong></span></div>
+          <div class="ground-step" data-idx="2"><span class="ground-num">3</span><span class="ground-sense">Things you can <strong>hear</strong></span></div>
+          <div class="ground-step" data-idx="3"><span class="ground-num">2</span><span class="ground-sense">Things you can <strong>smell</strong></span></div>
+          <div class="ground-step" data-idx="4"><span class="ground-num">1</span><span class="ground-sense">Thing you can <strong>taste</strong></span></div>
         </div>
         <button class="btn-ghost btn-sm" id="btnNextGround">Next sense →</button>
       </div>
 
-      <!-- Crisis / Support Resources -->
       <div class="resources-grid">
-        <div class="resource-card">
-          <div class="resource-icon">🖤</div>
-          <div class="resource-name">Therapy for Black Men</div>
-          <div class="resource-desc">Find Black male therapists who understand your experience</div>
-          <div class="resource-url">therapyforblackmen.org</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-icon">🤝</div>
-          <div class="resource-name">Boris Lawrence Henson Foundation</div>
-          <div class="resource-desc">Mental health resources and community for Black people</div>
-          <div class="resource-url">borislhensonfoundation.org</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-icon">📞</div>
-          <div class="resource-name">988 Suicide & Crisis Lifeline</div>
-          <div class="resource-desc">Call or text 988 — free, confidential support, 24/7</div>
-          <div class="resource-url">Call or text: 988</div>
-        </div>
-        <div class="resource-card">
-          <div class="resource-icon">💬</div>
-          <div class="resource-name">Loveland Foundation</div>
-          <div class="resource-desc">Therapy support specifically for Black women and girls — share with the women in your life</div>
-          <div class="resource-url">thelovelandfoundation.org</div>
-        </div>
+        <div class="resource-card"><div class="resource-icon">🖤</div><div class="resource-name">Therapy for Black Men</div><div class="resource-desc">Find Black male therapists who understand your experience</div><div class="resource-url">therapyforblackmen.org</div></div>
+        <div class="resource-card"><div class="resource-icon">🤝</div><div class="resource-name">Boris Lawrence Henson Foundation</div><div class="resource-desc">Mental health resources and community for Black people</div><div class="resource-url">borislhensonfoundation.org</div></div>
+        <div class="resource-card"><div class="resource-icon">📞</div><div class="resource-name">988 Crisis Lifeline</div><div class="resource-desc">Call or text 988 — free, confidential support, 24/7</div><div class="resource-url">Call or text: 988</div></div>
+        <div class="resource-card"><div class="resource-icon">💬</div><div class="resource-name">Loveland Foundation</div><div class="resource-desc">Therapy support for Black women and girls — share with the women in your life</div><div class="resource-url">thelovelandfoundation.org</div></div>
       </div>
 
       <div class="reminder-strip">
@@ -208,83 +181,76 @@
       </div>
     </section>
 
-  </main>
+    <!-- ── COUNSEL ── -->
+    <section class="view counsel-view" id="view-counsel">
 
-    <!-- ── VIEW: COUNSEL (AI Therapist) ── -->
-    <section class="view" id="view-counsel">
-      <div class="section-label">AI Counselor</div>
-      <h1>Someone who understands.</h1>
-      <p class="subtitle">
-        Dr. Waters holds a PhD in Psychology with a specialization in racial trauma,
-        intergenerational stress, and Black men's mental health. This is a safe space.
-        What's on your mind?
-      </p>
-
-      <div class="counsel-disclaimer">
-        This AI counselor is not a replacement for professional therapy.
-        If you are in crisis, please call or text <strong>988</strong>.
-      </div>
-
-      <!-- API Key setup (hidden once key is saved) -->
-      <div class="api-key-wrap" id="apiKeyWrap">
-        <div class="api-key-label">Enter your OpenAI API key to activate Dr. Waters</div>
-        <div class="api-key-row">
-          <input type="password" id="apiKeyInput" class="api-key-input" placeholder="sk-proj-..." />
-          <button class="btn-primary btn-sm" id="apiKeySave">Activate</button>
+      <!-- Left: Dr. Waters profile -->
+      <div class="counsel-sidebar">
+        <div class="dr-avatar">◎</div>
+        <div class="dr-name">Dr. Waters</div>
+        <div class="dr-title">PhD · Clinical Psychology</div>
+        <div class="dr-specialties">
+          <div class="dr-spec">Racial Trauma</div>
+          <div class="dr-spec">Black Male Psychology</div>
+          <div class="dr-spec">Intergenerational Stress</div>
+          <div class="dr-spec">Somatic Healing</div>
         </div>
-        <div class="api-key-note">Stored only in your browser. Never sent anywhere except OpenAI.</div>
+        <div class="dr-bio">
+          Trained in culturally responsive care. Familiar with the weight
+          you carry — not just as a person, but as a Black man in this world.
+        </div>
+        <div class="dr-crisis">
+          In crisis? Call or text <strong>988</strong>
+        </div>
+
+        <!-- API key entry -->
+        <div class="key-section" id="keySection">
+          <div class="key-label">OpenAI API Key</div>
+          <input type="password" id="apiKeyInput" class="key-input" placeholder="sk-proj-..." />
+          <button type="button" class="key-btn" id="apiKeySave">Connect</button>
+          <div class="key-note" id="keyNote">Stored in your browser only.</div>
+        </div>
+        <div class="key-connected" id="keyConnected" style="display:none">
+          <span class="key-dot">●</span> Connected
+          <button type="button" class="key-reset-btn" id="keyReset">Change key</button>
+        </div>
       </div>
 
-      <div class="chat-window" id="chatWindow">
-        <div class="chat-message assistant" id="chatWelcome">
-          <div class="chat-bubble">
-            Peace. I'm Dr. Waters. I'm here — no judgment, no rush.
-            You can talk to me about anything you're carrying: stress, anger,
-            grief, numbness, relationships, identity, or simply not knowing
-            how to put it into words. Whatever you bring, we'll work through it together.
-            <br><br>
-            What's been on your mind lately?
+      <!-- Right: Chat -->
+      <div class="counsel-chat">
+        <div class="chat-window" id="chatWindow">
+          <div class="chat-message assistant">
+            <div class="chat-bubble">
+              Peace. I'm Dr. Waters. I'm here — no judgment, no rush.
+              You can talk to me about anything you're carrying: stress, anger,
+              grief, numbness, relationships, identity, or simply not knowing
+              how to put it into words. Whatever you bring, we'll work through it together.
+              <br><br>
+              What's been on your mind lately?
+            </div>
           </div>
         </div>
+
+        <div class="chat-input-row">
+          <textarea
+            id="chatInput"
+            class="chat-input"
+            placeholder="Talk to Dr. Waters… (Enter to send)"
+            rows="1"
+          ></textarea>
+          <button type="button" class="chat-send-btn" id="chatSendBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div class="chat-input-row">
-        <textarea
-          id="chatInput"
-          class="chat-input"
-          placeholder="Type what's on your mind..."
-          rows="1"
-        ></textarea>
-        <button class="chat-send-btn" id="chatSendBtn" title="Send">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
-      <div class="chat-footer-note">Responses are generated by AI · Not a substitute for professional care</div>
     </section>
 
   </main>
 
-  <!-- Music player bar -->
-  <div class="music-bar" id="musicBar">
-    <div class="music-info">
-      <span class="music-icon">♪</span>
-      <span class="music-title" id="musicTitle">Meditation Music</span>
-    </div>
-    <div class="music-controls">
-      <button class="music-btn" id="musicPrev" title="Previous">&#8920;</button>
-      <button class="music-btn music-play-btn" id="musicPlay" title="Play">&#9654;</button>
-      <button class="music-btn" id="musicNext" title="Next">&#8921;</button>
-    </div>
-    <div class="music-vol-wrap">
-      <span class="music-vol-icon">♬</span>
-      <input type="range" class="music-vol" id="musicVol" min="0" max="1" step="0.01" value="0.4" />
-    </div>
-  </div>
-
-  <!-- Footer quote strip -->
   <footer>
     <div class="footer-quote" id="footerQuote"></div>
   </footer>
