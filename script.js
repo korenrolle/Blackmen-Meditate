@@ -860,8 +860,12 @@ async function sendMessage() {
     const data = await res.json();
 
     if (!res.ok) {
-      const errMsg = data.error?.message || 'Unknown error';
-      throw new Error(errMsg);
+      const code    = data.error?.code || '';
+      const errMsg  = data.error?.message || 'Unknown error';
+      // Attach the code so the catch block can check it
+      const err2    = new Error(errMsg);
+      err2.apiCode  = code;
+      throw err2;
     }
 
     const reply = data.choices[0].message.content.trim();
@@ -871,19 +875,26 @@ async function sendMessage() {
 
   } catch (err) {
     typingEl.remove();
-    const msg = (err.message || '').toLowerCase();
-    console.error('Dr. Waters error:', err.message);
+    const msg  = (err.message || '').toLowerCase();
+    const code = (err.apiCode || '').toLowerCase();
+    console.error('Dr. Waters error:', err.message, '| code:', err.apiCode);
 
-    if (msg.includes('incorrect api key') || msg.includes('invalid_api_key') || msg.includes('401')) {
+    if (msg.includes('incorrect api key') || code === 'invalid_api_key' || msg.includes('401')) {
       clearKey();
       refreshKeyUI();
-      appendMsg('assistant', 'Your API key appears to be invalid or expired. Please enter a new one in the sidebar on the left.');
-    } else if (msg.includes('quota') || msg.includes('rate limit') || msg.includes('429')) {
-      appendMsg('assistant', "You've hit the API rate limit or quota. Please wait a moment and try again.");
+      appendMsg('assistant', 'Your API key appears to be invalid or expired. Please enter a new one in the sidebar.');
+    } else if (code === 'insufficient_quota' || msg.includes('insufficient_quota') || msg.includes('exceeded your current quota')) {
+      appendMsg('assistant',
+        'Your OpenAI account has no credits. You need to add a payment method and purchase credits at ' +
+        '<a href="https://platform.openai.com/settings/organization/billing" target="_blank" style="color:var(--gold-light)">platform.openai.com/settings/organization/billing</a> — ' +
+        'even $5 is enough to get started. Once you\'ve added credits, come right back.'
+      );
+    } else if (msg.includes('rate_limit') || (msg.includes('429') && !msg.includes('quota'))) {
+      appendMsg('assistant', "Too many requests at once — give it 30 seconds and try again.");
     } else if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('load')) {
-      appendMsg('assistant', "Can't reach the server right now — check your internet connection and try again. If this keeps happening, the API may be temporarily down.");
+      appendMsg('assistant', "Can't reach the server — check your internet connection and try again.");
     } else {
-      appendMsg('assistant', `Something went wrong (${err.message || 'unknown error'}). If you're in a difficult moment, please call or text <strong>988</strong>.`);
+      appendMsg('assistant', `Something went wrong: <em>${err.message || 'unknown error'}</em>. If you're in a difficult moment, please call or text <strong>988</strong>.`);
     }
   }
 
