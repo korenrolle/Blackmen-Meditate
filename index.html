@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Still Waters — Healing Space for Black Men</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Ambient background particles -->
+  <canvas id="ambientCanvas"></canvas>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-mark">◎</span>
+      <div class="logo-text-wrap">
+        <span class="logo-text">Still Waters</span>
+        <span class="logo-sub">A space made for you</span>
+      </div>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-view="breathe">Breathe</button>
+      <button class="nav-btn" data-view="timer">Sit</button>
+      <button class="nav-btn" data-view="affirmations">Affirm</button>
+      <button class="nav-btn" data-view="resources">Ground</button>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main>
+
+    <!-- ── VIEW: BREATHE ── -->
+    <section class="view active" id="view-breathe">
+      <div class="section-label">Breathe</div>
+      <h1>You are safe right now.</h1>
+      <p class="subtitle">Your nervous system has been carrying a lot. Let's start here.</p>
+
+      <div class="context-note">
+        Racial trauma activates the body's stress response — sometimes for hours or days.
+        These techniques help regulate your nervous system back to calm.
+      </div>
+
+      <div class="technique-picker">
+        <button class="technique-btn active" data-technique="box">Box (4-4-4-4)</button>
+        <button class="technique-btn" data-technique="478">4-7-8 Release</button>
+        <button class="technique-btn" data-technique="calm">Calm (4-6)</button>
+      </div>
+
+      <div class="breath-ring-wrap">
+        <svg class="breath-ring" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle class="ring-bg" cx="100" cy="100" r="88" />
+          <circle class="ring-track" cx="100" cy="100" r="88" />
+          <circle class="ring-progress" id="breathRingProgress" cx="100" cy="100" r="88" />
+        </svg>
+        <div class="breath-inner">
+          <div class="breath-phase" id="breathPhase">Ready</div>
+          <div class="breath-count" id="breathCount">—</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary" id="btnBreath">Begin</button>
+        <button class="btn-ghost" id="btnBreathReset" style="display:none">Reset</button>
+      </div>
+      <div class="session-stat" id="breathStat"></div>
+    </section>
+
+    <!-- ── VIEW: TIMER ── -->
+    <section class="view" id="view-timer">
+      <div class="section-label">Meditation Timer</div>
+      <h1>Be still. Be present.</h1>
+      <p class="subtitle">Even five minutes belongs to you. No one can take this time.</p>
+
+      <div class="duration-picker">
+        <button class="dur-btn active" data-minutes="5">5 min</button>
+        <button class="dur-btn" data-minutes="10">10 min</button>
+        <button class="dur-btn" data-minutes="15">15 min</button>
+        <button class="dur-btn" data-minutes="20">20 min</button>
+        <button class="dur-btn" data-minutes="30">30 min</button>
+      </div>
+
+      <div class="timer-display-wrap">
+        <svg class="timer-ring" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+          <circle class="ring-bg" cx="110" cy="110" r="96" />
+          <circle class="ring-track" cx="110" cy="110" r="96" />
+          <circle class="ring-progress" id="timerRingProgress" cx="110" cy="110" r="96" />
+        </svg>
+        <div class="timer-inner">
+          <div class="timer-digits" id="timerDigits">5:00</div>
+          <div class="timer-label" id="timerLabel">minutes</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary" id="btnTimer">Start</button>
+        <button class="btn-ghost" id="btnTimerReset" style="display:none">Reset</button>
+      </div>
+
+      <div class="sound-row">
+        <span class="sound-label">Ambient</span>
+        <div class="sound-options">
+          <button class="sound-btn active" data-sound="none">Silence</button>
+          <button class="sound-btn" data-sound="rain">Rain</button>
+          <button class="sound-btn" data-sound="bowl">Bowl</button>
+          <button class="sound-btn" data-sound="forest">Forest</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: AFFIRMATIONS ── -->
+    <section class="view" id="view-affirmations">
+      <div class="section-label">Daily Affirmations</div>
+      <h1>Words for the journey.</h1>
+      <p class="subtitle">Speak these over yourself. They were written with you in mind.</p>
+
+      <div class="affirmation-card" id="affirmationCard">
+        <div class="affirmation-quote" id="affirmationText">Loading...</div>
+        <div class="affirmation-author" id="affirmationAuthor"></div>
+      </div>
+
+      <div class="affirmation-dots" id="affirmationDots"></div>
+
+      <div class="controls affirmation-controls">
+        <button class="btn-ghost" id="btnPrevAffirm">← Prev</button>
+        <button class="btn-primary" id="btnNextAffirm">Next →</button>
+      </div>
+
+      <div class="journal-prompt-wrap">
+        <div class="journal-label">Reflect on this</div>
+        <div class="journal-prompt" id="journalPrompt"></div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: GROUND (Resources) ── -->
+    <section class="view" id="view-resources">
+      <div class="section-label">Grounding & Resources</div>
+      <h1>You don't have to hold this alone.</h1>
+      <p class="subtitle">Tools for when things feel heavy, and people who understand.</p>
+
+      <!-- 5-4-3-2-1 Grounding -->
+      <div class="ground-card">
+        <div class="ground-card-title">5-4-3-2-1 Grounding</div>
+        <div class="ground-card-desc">
+          A technique to bring you back into your body when your mind is overwhelmed.
+          Work through each sense slowly.
+        </div>
+        <div class="ground-steps" id="groundSteps">
+          <div class="ground-step active" data-idx="0">
+            <span class="ground-num">5</span>
+            <span class="ground-sense">Things you can <strong>see</strong></span>
+          </div>
+          <div class="ground-step" data-idx="1">
+            <span class="ground-num">4</span>
+            <span class="ground-sense">Things you can <strong>touch</strong></span>
+          </div>
+          <div class="ground-step" data-idx="2">
+            <span class="ground-num">3</span>
+            <span class="ground-sense">Things you can <strong>hear</strong></span>
+          </div>
+          <div class="ground-step" data-idx="3">
+            <span class="ground-num">2</span>
+            <span class="ground-sense">Things you can <strong>smell</strong></span>
+          </div>
+          <div class="ground-step" data-idx="4">
+            <span class="ground-num">1</span>
+            <span class="ground-sense">Thing you can <strong>taste</strong></span>
+          </div>
+        </div>
+        <button class="btn-ghost btn-sm" id="btnNextGround">Next sense →</button>
+      </div>
+
+      <!-- Crisis / Support Resources -->
+      <div class="resources-grid">
+        <div class="resource-card">
+          <div class="resource-icon">🖤</div>
+          <div class="resource-name">Therapy for Black Men</div>
+          <div class="resource-desc">Find Black male therapists who understand your experience</div>
+          <div class="resource-url">therapyforblackmen.org</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-icon">🤝</div>
+          <div class="resource-name">Boris Lawrence Henson Foundation</div>
+          <div class="resource-desc">Mental health resources and community for Black people</div>
+          <div class="resource-url">borislhensonfoundation.org</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-icon">📞</div>
+          <div class="resource-name">988 Suicide & Crisis Lifeline</div>
+          <div class="resource-desc">Call or text 988 — free, confidential support, 24/7</div>
+          <div class="resource-url">Call or text: 988</div>
+        </div>
+        <div class="resource-card">
+          <div class="resource-icon">💬</div>
+          <div class="resource-name">Loveland Foundation</div>
+          <div class="resource-desc">Therapy support specifically for Black women and girls — share with the women in your life</div>
+          <div class="resource-url">thelovelandfoundation.org</div>
+        </div>
+      </div>
+
+      <div class="reminder-strip">
+        Seeking help is one of the most courageous things a man can do.
+        Black men deserve care — not toughness for its own sake.
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer quote strip -->
+  <footer>
+    <div class="footer-quote" id="footerQuote"></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
