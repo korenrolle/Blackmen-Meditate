@@ -389,17 +389,138 @@ groundStepEls.forEach((s, i) => s.addEventListener('click', () => setGroundStep(
 })();
 
 // ══════════════════════════════════════════════
-// MUSIC ENGINE
+// SMOOTH JAZZ ENGINE
+// Procedural jazz: walking bass, piano chords,
+// saxophone melody, soft brush percussion.
 // ══════════════════════════════════════════════
+
+// Note frequency lookup (octave 4 = middle)
+const _NF = { C:261.63, Db:277.18, D:293.66, Eb:311.13, E:329.63, F:349.23,
+              Gb:369.99, G:392.00, Ab:415.30, A:440.00, Bb:466.16, B:493.88 };
+function hz(note, oct = 4) { return _NF[note] * Math.pow(2, oct - 4); }
+
+// 5 smooth jazz tracks — each has its own feel, key, BPM, and progression
 const MUSIC_TRACKS = [
-  { name: 'Still River · 432Hz Drone',   root: 432, style: 'drone' },
-  { name: "Ancestors' Rest · 528Hz",     root: 528, style: 'drone' },
-  { name: 'Deep Ground · Earth Tone',    root: 174, style: 'deep'  },
-  { name: 'Morning Light · Soft Bells',  root: 528, style: 'bells' },
-  { name: 'Safe Space · Ambient Pad',    root: 396, style: 'pad'   },
+  {
+    name: 'Midnight Blue · slow ballad',
+    bpm: 66, key: 'F',
+    // Walking bass notes per bar [note, octave] × 4 beats
+    bass: [
+      ['F',2],['A',2],['C',3],['Eb',3],  // Fmaj7
+      ['D',2],['F',2],['A',2],['C',3],   // Dm7
+      ['G',2],['Bb',2],['D',3],['F',3],  // Gm7
+      ['C',2],['E',2],['G',2],['Bb',2],  // C7
+    ],
+    // Chord voicings [notes×octaves] per bar
+    chords: [
+      [['F',3],['A',3],['C',4],['E',4]],
+      [['D',3],['F',3],['A',3],['C',4]],
+      [['G',3],['Bb',3],['D',4],['F',4]],
+      [['C',3],['E',3],['G',3],['Bb',3]],
+    ],
+    // Melody [note, oct, beat_offset, duration_beats]
+    melody: [
+      ['C',5, 0,   1.8], ['E',5, 2,   0.9], ['F',5, 3,   0.9],
+      ['A',4, 4,   2.2], ['G',4, 6.5, 1.4],
+      ['D',5, 8,   0.7], ['Bb',4,9,   2.8],
+      ['G',4, 12,  1.5], ['E',4, 14,  2.0],
+    ],
+  },
+  {
+    name: 'Silk & Smoke · cool jazz',
+    bpm: 88, key: 'Bb',
+    bass: [
+      ['Bb',2],['D',3],['F',3],['A',3],
+      ['G',2], ['Bb',2],['D',3],['F',3],
+      ['C',2], ['Eb',3],['G',3],['Bb',3],
+      ['F',2], ['A',2], ['C',3],['Eb',3],
+    ],
+    chords: [
+      [['Bb',3],['D',4],['F',4],['A',4]],
+      [['G',3], ['Bb',3],['D',4],['F',4]],
+      [['C',3], ['Eb',4],['G',4],['Bb',4]],
+      [['F',3], ['A',3], ['C',4],['Eb',4]],
+    ],
+    melody: [
+      ['F',5,  0,  0.8], ['Eb',5, 1,  1.5], ['D',5, 2.5, 0.8],
+      ['C',5,  4,  2.0], ['Bb',4, 6,  1.8],
+      ['G',4,  8,  0.6], ['A',4,  9,  0.6], ['Bb',4,10, 1.8],
+      ['F',4,  12, 1.5], ['G',4,  14, 2.0],
+    ],
+  },
+  {
+    name: 'Still Waters · bossa groove',
+    bpm: 80, key: 'A',
+    bass: [
+      ['A',2], ['C#',3],['E',3],['G#',3],
+      ['F#',2],['A',2], ['C#',3],['E',3],
+      ['B',2], ['D',3], ['F#',3],['A',3],
+      ['E',2], ['G#',2],['B',2], ['D',3],
+    ],
+    chords: [
+      [['A',3], ['C#',4],['E',4], ['G#',4]],
+      [['F#',3],['A',3], ['C#',4],['E',4]],
+      [['B',3], ['D',4], ['F#',4],['A',4]],
+      [['E',3], ['G#',3],['B',3], ['D',4]],
+    ],
+    melody: [
+      ['E',5,  0,  1.0], ['C#',5, 1.5, 1.5], ['A',4, 3,  1.0],
+      ['F#',4, 4,  2.0], ['G#',4, 6,   2.0],
+      ['B',4,  8,  0.8], ['A',4,  9,   2.2],
+      ['C#',5, 12, 1.5], ['E',5,  14,  2.0],
+    ],
+  },
+  {
+    name: 'Velvet Evening · slow groove',
+    bpm: 72, key: 'G',
+    bass: [
+      ['G',2], ['B',2], ['D',3],['F#',3],
+      ['E',2], ['G',2], ['B',2],['D',3],
+      ['A',2], ['C',3], ['E',3],['G',3],
+      ['D',2], ['F#',2],['A',2],['C',3],
+    ],
+    chords: [
+      [['G',3], ['B',3], ['D',4],['F#',4]],
+      [['E',3], ['G',3], ['B',3],['D',4]],
+      [['A',3], ['C',4], ['E',4],['G',4]],
+      [['D',3], ['F#',3],['A',3],['C',4]],
+    ],
+    melody: [
+      ['D',5,  0,  2.0], ['B',4,  2,  1.8],
+      ['G',4,  4,  1.0], ['A',4,  5.5, 1.5], ['B',4, 7, 1.0],
+      ['C',5,  8,  0.8], ['B',4,  9,  0.8], ['A',4, 10, 2.0],
+      ['F#',4, 12, 1.5], ['G',4,  14, 2.5],
+    ],
+  },
+  {
+    name: 'Easy Sunday · laid back',
+    bpm: 76, key: 'D',
+    bass: [
+      ['D',2], ['F#',2],['A',2],['C#',3],
+      ['B',1], ['D',2], ['F#',2],['A',2],
+      ['E',2], ['G',2], ['B',2], ['D',3],
+      ['A',1], ['C#',2],['E',2], ['G',2],
+    ],
+    chords: [
+      [['D',3], ['F#',3],['A',3],['C#',4]],
+      [['B',3], ['D',4], ['F#',4],['A',4]],
+      [['E',3], ['G',3], ['B',3], ['D',4]],
+      [['A',3], ['C#',4],['E',4], ['G',4]],
+    ],
+    melody: [
+      ['A',4,  0,  1.5], ['F#',4, 2,  2.0],
+      ['D',4,  4,  1.0], ['E',4,  5,  0.8], ['F#',4,6,  2.0],
+      ['G',4,  8,  0.6], ['A',4,  9,  0.9], ['B',4,10,  2.2],
+      ['C#',5, 12, 1.8], ['A',4,  14, 2.5],
+    ],
+  },
 ];
 
-let musicCtx = null, musicNodes = [], musicPlaying = false, musicTrackIdx = 0, musicVolume = 0.4, musicMasterGain = null;
+// Add C# alias
+_NF['C#'] = _NF['Db'];
+
+let musicCtx = null, musicPlaying = false, musicTrackIdx = 0, musicVolume = 0.4;
+let musicMasterGain = null, musicLoopTimeout = null, musicAllNodes = [];
 
 function getMusicCtx() {
   if (!musicCtx) {
@@ -411,32 +532,162 @@ function getMusicCtx() {
   return musicCtx;
 }
 
-function stopMusic() { for (const n of musicNodes) { try { n.stop(); } catch (_) {} } musicNodes = []; }
+// Schedule one note with attack/decay envelope
+function schedNote(ctx, dest, freq, t, dur, vol, type = 'sine') {
+  if (!freq || !isFinite(freq)) return null;
+  const osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  const att = Math.min(0.03, dur * 0.08);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + att);
+  g.gain.setValueAtTime(vol * 0.75, t + dur * 0.65);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.connect(g); g.connect(dest);
+  osc.start(t); osc.stop(t + dur + 0.05);
+  musicAllNodes.push(osc);
+  return osc;
+}
 
-function playTrack(track) {
+// Saxophone-like: sawtooth + lowpass + vibrato
+function schedSax(ctx, dest, freq, t, dur, vol) {
+  if (!freq || !isFinite(freq)) return;
+  const osc = ctx.createOscillator();
+  const filt = ctx.createBiquadFilter();
+  const g = ctx.createGain();
+  const lfo = ctx.createOscillator();
+  const lfoG = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq;
+  lfo.frequency.value = 5.2;
+  lfoG.gain.value = 4;
+  lfo.connect(lfoG); lfoG.connect(osc.frequency);
+
+  filt.type = 'lowpass';
+  filt.frequency.setValueAtTime(600, t);
+  filt.frequency.exponentialRampToValueAtTime(2200, t + 0.08);
+  filt.frequency.exponentialRampToValueAtTime(1400, t + dur * 0.5);
+  filt.Q.value = 1.8;
+
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.07);
+  g.gain.setValueAtTime(vol * 0.8, t + dur * 0.6);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  osc.connect(filt); filt.connect(g); g.connect(dest);
+  lfo.start(t + 0.12); lfo.stop(t + dur + 0.1);
+  osc.start(t); osc.stop(t + dur + 0.1);
+  musicAllNodes.push(osc, lfo);
+}
+
+// Brush hi-hat: short noise burst filtered high
+function schedBrush(ctx, dest, t, vol = 0.028) {
+  try {
+    const len = Math.floor(ctx.sampleRate * 0.045);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const filt = ctx.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = 6000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.055);
+    src.connect(filt); filt.connect(g); g.connect(dest);
+    src.start(t);
+    musicAllNodes.push(src);
+  } catch (_) {}
+}
+
+// Soft kick drum: sine sweep low to very low
+function schedKick(ctx, dest, t, vol = 0.10) {
+  const osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(110, t);
+  osc.frequency.exponentialRampToValueAtTime(38, t + 0.22);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+  osc.connect(g); g.connect(dest);
+  osc.start(t); osc.stop(t + 0.32);
+  musicAllNodes.push(osc);
+}
+
+function stopMusic() {
+  clearTimeout(musicLoopTimeout);
+  musicLoopTimeout = null;
+  for (const n of musicAllNodes) { try { n.stop(); } catch (_) {} }
+  musicAllNodes = [];
+}
+
+function scheduleJazzPattern(track, startTime) {
+  const ctx = getMusicCtx();
+  const dest = musicMasterGain;
+  const beat = 60 / track.bpm;          // seconds per beat
+  const swing = beat * 0.06;            // slight swing offset on offbeats
+  const totalBeats = 16;                // 4 bars × 4 beats
+  const totalTime = totalBeats * beat;
+
+  // ── Walking bass (one note per beat) ──
+  for (let i = 0; i < track.bass.length; i++) {
+    const [note, oct] = track.bass[i];
+    const t = startTime + i * beat;
+    const dur = beat * 0.88;
+    schedNote(ctx, dest, hz(note, oct), t, dur, 0.30, 'sine');
+  }
+
+  // ── Piano chord pads (once per bar, held) ──
+  for (let bar = 0; bar < 4; bar++) {
+    const t = startTime + bar * 4 * beat;
+    const voicing = track.chords[bar];
+    // Play chord on beat 1 and beat 3 of each bar
+    [0, 2].forEach(beatOff => {
+      voicing.forEach(([note, oct]) => {
+        schedNote(ctx, dest, hz(note, oct), t + beatOff * beat, beat * 1.6, 0.07, 'triangle');
+      });
+    });
+    // Offbeat (beat 2 & 4) lighter stab
+    [1, 3].forEach(beatOff => {
+      voicing.forEach(([note, oct]) => {
+        schedNote(ctx, dest, hz(note, oct), t + beatOff * beat + swing, beat * 0.55, 0.04, 'triangle');
+      });
+    });
+  }
+
+  // ── Saxophone melody ──
+  for (const [note, oct, beatOff, durBeats] of track.melody) {
+    const t = startTime + beatOff * beat;
+    const dur = durBeats * beat * 0.92;
+    schedSax(ctx, dest, hz(note, oct), t, dur, 0.13);
+  }
+
+  // ── Brush percussion ──
+  for (let b = 0; b < totalBeats; b++) {
+    const t = startTime + b * beat;
+    // Kick on beats 1 and 3 of each bar
+    if (b % 4 === 0)       schedKick(ctx, dest, t, 0.09);
+    if (b % 4 === 2)       schedKick(ctx, dest, t, 0.06);
+    // Brush on every beat
+    schedBrush(ctx, dest, t, 0.025);
+    // Extra brush on 8th-note offbeat (with swing)
+    schedBrush(ctx, dest, t + beat * 0.5 + swing, 0.015);
+  }
+
+  return totalTime;
+}
+
+function startJazzLoop(track) {
   stopMusic();
-  const c = getMusicCtx(), out = musicMasterGain;
+  const ctx = getMusicCtx();
+  const patternDur = scheduleJazzPattern(track, ctx.currentTime + 0.05);
 
-  function osc(freq, type, gain, detune = 0) {
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.value = freq; o.detune.value = detune; g.gain.value = gain;
-    o.connect(g); g.connect(out); o.start(); musicNodes.push(o);
+  function loop() {
+    if (!musicPlaying) return;
+    const now = ctx.currentTime;
+    scheduleJazzPattern(track, now + 0.1);
+    musicLoopTimeout = setTimeout(loop, (patternDur - 0.2) * 1000);
   }
 
-  function noise(gainVal, lpFreq) {
-    const len = c.sampleRate * 4, buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * 0.04;
-    const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
-    const flt = c.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = lpFreq;
-    const g = c.createGain(); g.gain.value = gainVal;
-    src.connect(flt); flt.connect(g); g.connect(out); src.start(); musicNodes.push(src);
-  }
-
-  const r = track.root;
-  if (track.style === 'drone') { osc(r, 'sine', 0.28); osc(r, 'sine', 0.12, 4); osc(r * 2, 'sine', 0.14); osc(r * 1.5, 'sine', 0.10); osc(r * 3, 'sine', 0.05); noise(0.015, 400); }
-  else if (track.style === 'deep')  { osc(r, 'sine', 0.35); osc(r * 2, 'sine', 0.14); osc(r * 1.33, 'sine', 0.08); noise(0.012, 300); }
-  else if (track.style === 'bells') { osc(r, 'sine', 0.18); osc(r * 2, 'sine', 0.10); osc(r * 4, 'sine', 0.06); osc(r * 6, 'sine', 0.03); noise(0.01, 600); }
-  else if (track.style === 'pad')   { osc(r, 'sine', 0.22); osc(r, 'triangle', 0.10, 7); osc(r * 1.5, 'sine', 0.09); osc(r * 2, 'sine', 0.07); osc(r * 0.5, 'sine', 0.14); noise(0.018, 500); }
+  musicLoopTimeout = setTimeout(loop, (patternDur - 0.2) * 1000);
 }
 
 function updateMusicUI() {
@@ -448,19 +699,19 @@ function updateMusicUI() {
 
 document.getElementById('musicPlay').addEventListener('click', () => {
   if (musicPlaying) { stopMusic(); musicPlaying = false; }
-  else { playTrack(MUSIC_TRACKS[musicTrackIdx]); musicPlaying = true; }
+  else { musicPlaying = true; startJazzLoop(MUSIC_TRACKS[musicTrackIdx]); }
   updateMusicUI();
 });
 
 document.getElementById('musicNext').addEventListener('click', () => {
   musicTrackIdx = (musicTrackIdx + 1) % MUSIC_TRACKS.length;
-  if (musicPlaying) playTrack(MUSIC_TRACKS[musicTrackIdx]);
+  if (musicPlaying) { musicPlaying = true; startJazzLoop(MUSIC_TRACKS[musicTrackIdx]); }
   updateMusicUI();
 });
 
 document.getElementById('musicPrev').addEventListener('click', () => {
   musicTrackIdx = (musicTrackIdx - 1 + MUSIC_TRACKS.length) % MUSIC_TRACKS.length;
-  if (musicPlaying) playTrack(MUSIC_TRACKS[musicTrackIdx]);
+  if (musicPlaying) { musicPlaying = true; startJazzLoop(MUSIC_TRACKS[musicTrackIdx]); }
   updateMusicUI();
 });
 
@@ -620,15 +871,20 @@ async function sendMessage() {
 
   } catch (err) {
     typingEl.remove();
-    const isAuthErr = err.message.includes('Incorrect API key') || err.message.includes('invalid_api_key');
-    if (isAuthErr) {
+    const msg = (err.message || '').toLowerCase();
+    console.error('Dr. Waters error:', err.message);
+
+    if (msg.includes('incorrect api key') || msg.includes('invalid_api_key') || msg.includes('401')) {
       clearKey();
       refreshKeyUI();
-      appendMsg('assistant', 'Your API key appears to be invalid. Please enter a new one in the sidebar.');
+      appendMsg('assistant', 'Your API key appears to be invalid or expired. Please enter a new one in the sidebar on the left.');
+    } else if (msg.includes('quota') || msg.includes('rate limit') || msg.includes('429')) {
+      appendMsg('assistant', "You've hit the API rate limit or quota. Please wait a moment and try again.");
+    } else if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('load')) {
+      appendMsg('assistant', "Can't reach the server right now — check your internet connection and try again. If this keeps happening, the API may be temporarily down.");
     } else {
-      appendMsg('assistant', "I'm having trouble connecting right now. If you're in a difficult moment, please call or text <strong>988</strong>. You deserve support.");
+      appendMsg('assistant', `Something went wrong (${err.message || 'unknown error'}). If you're in a difficult moment, please call or text <strong>988</strong>.`);
     }
-    console.error('Dr. Waters error:', err.message);
   }
 
   chatSendBtn.disabled = false;
